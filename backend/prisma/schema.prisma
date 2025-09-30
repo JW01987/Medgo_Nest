@@ -1,0 +1,97 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// 입출고 타입
+enum TransactionType {
+  IN
+  OUT
+  DISCARD
+}
+
+model Member {
+  id          Int       @id @default(autoincrement())
+  email       String    @map("EMAIL") @unique
+  password    String    @map("PASSWORD")
+  licenseCode String    @map("LICENSE_CODE") @unique
+  deletedAt DateTime? @map("DELETED_AT")
+
+  pharmacies  Pharmacy[]
+}
+
+model Pharmacy {
+  id           Int               @id @default(autoincrement())
+  pharmacyName String           @map("PHARMACY_NAME")
+  address      String           @map("ADDRESS")
+  phone        String           @map("PHONE")
+  latitude     Float            @map("LATITUDE")
+  longitude    Float            @map("LONGITUDE")
+  openTime     String           @map("OPEN_TIME")
+  closeTime    String           @map("CLOSE_TIME")
+  userId       Int               @unique
+  deletedAt DateTime? @map("DELETED_AT")
+
+  stocks        PharmacyStock[]
+  stockHistories StockHistory[]
+  boards        PharmacyBoard[]
+  user          Member? @relation(fields: [userId], references: [id])
+}
+
+model Medicine {
+  id               Int             @id @default(autoincrement())
+  productName      String         @map("PRODUCT_NAME")
+  manufacturerName String        @map("MANUFACTURER_NAME")
+  strengthValue    String?         @map("STRENGTH_VALUE")
+  packQty          String?         @map("PACK_QTY")
+  dosageForm       String?         @map("DOSAGE_FORM")
+  packageType      String?         @map("PACKAGE_TYPE")
+  drugType         String?         @map("DRUG_TYPE")
+  mainCode         String?         @map("MAIN_CODE")
+  standardCode     String?         @map("STANDARD_CODE")
+  ingredientCode   String?         @map("INGREDIENT_CODE")
+  remarks          String?         @map("REMARKS")
+  atcCode          String?         @map("ATC_CODE")
+
+  pharmacyStocks  PharmacyStock[]
+  stockHistories  StockHistory[]
+}
+
+model PharmacyStock {
+  medicineId Int
+  pharmacyId Int
+  medCount   Int?
+
+  medicine  Medicine @relation(fields: [medicineId], references: [id])
+  pharmacy  Pharmacy @relation(fields: [pharmacyId], references: [id],onDelete: Cascade)
+
+  @@id([medicineId, pharmacyId])
+}
+
+model StockHistory {
+  id              Int             @id @default(autoincrement())
+  pharmacyId      Int
+  medicineId      Int
+  quantity        Int
+  transactionType TransactionType @map("TRANSACTION_TYPE")
+  transactionDate DateTime        @map("TRANSACTION_DATE") @default(now())
+
+  pharmacy  Pharmacy @relation(fields: [pharmacyId], references: [id],onDelete: Cascade)
+  medicine  Medicine @relation(fields: [medicineId], references: [id])
+}
+
+model PharmacyBoard {
+  id          Int       @id @default(autoincrement())
+  content     String    @map("CONTENT")
+  title       String    @map("TITLE")
+  createdAt   DateTime  @map("CREATED_AT") @default(now())
+  updatedAt   DateTime  @map("UPDATED_AT") @default(now())
+  deletedAt DateTime? @map("DELETED_AT")
+  pharmacyId  Int
+
+  pharmacy    Pharmacy @relation(fields: [pharmacyId], references: [id],onDelete: Cascade )
+}
