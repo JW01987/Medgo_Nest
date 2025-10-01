@@ -19,20 +19,30 @@ model Member {
   email       String    @map("EMAIL") @unique
   password    String    @map("PASSWORD")
   licenseCode String    @map("LICENSE_CODE") @unique
+  isVerified Boolean  @default(false)
   deletedAt DateTime? @map("DELETED_AT")
 
   pharmacies  Pharmacy[]
+}
+//추후 레디스로 이동할수도
+model EmailVerification {
+  id        Int      @id @default(autoincrement())
+  email     String
+  token     String
+  used      Boolean  @default(false)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
 }
 
 model Pharmacy {
   id           Int               @id @default(autoincrement())
   pharmacyName String           @map("PHARMACY_NAME")
   address      String           @map("ADDRESS")
-  phone        String           @map("PHONE")
+  phone        String?           @map("PHONE")
   latitude     Float            @map("LATITUDE")
   longitude    Float            @map("LONGITUDE")
-  openTime     String           @map("OPEN_TIME")
-  closeTime    String           @map("CLOSE_TIME")
+  openTime     String?           @map("OPEN_TIME")
+  closeTime    String?          @map("CLOSE_TIME")
   userId       Int               @unique
   deletedAt DateTime? @map("DELETED_AT")
 
