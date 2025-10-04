@@ -9,7 +9,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import { LoginDTO } from './dtos/login.dto';
 import { JwtPayload } from './types/jwt-payload.type';
-import { randomBytes } from 'crypto';
+import * as crypto from 'crypto';
 import { MailerService } from '@nestjs-modules/mailer';
 
 @Injectable()
@@ -70,7 +70,7 @@ export class AuthService {
    * @returns
    */
   async sendVerificationEmail(email: string) {
-    const token = randomBytes(32).toString('hex');
+    const token = crypto.randomBytes(32).toString('hex');
     const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1시간
 
     await this.prisma.emailVerification.create({
@@ -172,5 +172,82 @@ export class AuthService {
     });
 
     return { success: true, message: '회원가입 완료' };
+  }
+
+  /**
+   * 비밀번호 변경을 위한 메일 전송
+   * @param email
+   * @returns
+   */
+  async sendVerificationEmailForPsw(email: string) {
+    const token = crypto.randomBytes(32).toString('hex');
+    const expireAt = new Date(Date.now() + 30 * 60 * 1000);
+    const user = await this.findByEmail(email);
+
+    await this.prisma.passwordResetToken.create({
+      data: { memberId: user.id, token, expireAt },
+    });
+
+    const url = process.env.DOMAIN_URL + `/auth/reset-password?token=${token}`;
+    const html = `
+        <div
+      style="text-align: center; font-family: Arial,sans-serif; background-color:#fff;color: #333; line-height: 1.5; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;"
+    >
+      <h1 style="color: #14b3ae;">비밀번호 재설정을 위한 메일입니다</h1>
+      <h3>본인이 설정한 것이 아니라면 링크를 클릭하지 마세요</h3>
+      <img
+        src="https://cdn-icons-gif.flaticon.com/9534/9534955.gif"
+        style="width:200px;"
+      />
+      <p>아래 버튼을 클릭하면 비밀번호를 재설정 할 수 있습니다.</p>
+      <a
+        href="${url}"
+        style="display: inline-block; padding: 10px 20px; background-color: #14b3ae; color: white; text-decoration: none; border-radius: 5px;"
+        >비밀번호 재설정</a
+      >
+      <p style="margin-top: 20px; font-size: 12px; color: #888;">
+        링크 유효시간: 30분
+      </p>
+    </div>
+    `;
+
+    await this.mailerService.sendMail({
+      to: email,
+      from: `"약찾GO 서비스팀" <${process.env.SMTP_USER}>`,
+      subject: '비밀번호 재설정 메일',
+      html,
+    });
+
+    return { message: '비밀번호 재설정 메일 발송 완료' };
+  }
+
+  /**
+   * 비밀번호 변경
+   * @param token
+   * @param newPassword
+   * @returns
+   */
+  async resetPasswordService(token: string, newPassword: string) {
+    const resetToken = await this.prisma.passwordResetToken.findUnique({
+      where: { token },
+      include: { member: true },
+    });
+
+    if (!resetToken || resetToken.expireAt < new Date()) {
+      throw new BadRequestException('유효하지 않거나 만료된 토큰입니다.');
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await this.prisma.member.update({
+      where: { id: resetToken.memberId },
+      data: { password: hashedPassword },
+    });
+
+    await this.prisma.passwordResetToken.delete({
+      where: { id: resetToken.id },
+    });
+
+    return { message: '비밀번호 변경 완료' };
   }
 }
