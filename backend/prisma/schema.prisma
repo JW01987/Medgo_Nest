@@ -23,30 +23,7 @@ model Member {
   deletedAt DateTime? @map("DELETED_AT")
 
   pharmacies  Pharmacy[]
-  passwordResetTokens PasswordResetToken[]
 }
-//추후 레디스로 이동
-model EmailVerification {
-  id        Int      @id @default(autoincrement())
-  email     String
-  token     String
-  used      Boolean  @default(false)
-  expiresAt DateTime
-  createdAt DateTime @default(now())
-}
-
-//추후 레디스로 이동
-model PasswordResetToken {
-  id        Int      @id @default(autoincrement())
-  memberId  Int
-  token     String   @unique
-  used      Boolean  @default(false)
-  expireAt  DateTime
-  createdAt DateTime @default(now())
-
-  member    Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
-}
-
 
 model Pharmacy {
   id           Int               @id @default(autoincrement())

@@ -11,6 +11,7 @@ import { AuthModule } from './auth/auth.module';
 import { PrismaModule } from '../prisma/prisma.module';
 import { GlobalJwtModule } from './jwt/jwt.module';
 import { MailerModule } from '@nestjs-modules/mailer';
+import { RedisModule } from './redis/redis.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { MailerModule } from '@nestjs-modules/mailer';
     BoardModule,
     AuthModule,
     PrismaModule,
+    RedisModule,
   ],
   controllers: [AppController],
   providers: [AppService],

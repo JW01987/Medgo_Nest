@@ -20,9 +20,36 @@ export class AuthController {
   @Post('login')
   @ApiOperation({ summary: '로그인' })
   @ApiBody({ type: LoginDTO })
-  @ApiResponse({ status: 201, description: 'JWT 토큰 반환' })
+  @ApiResponse({
+    status: 201,
+    description: 'Access Token과 Refresh Token 반환',
+  })
   async login(@Body() loginDTO: LoginDTO) {
     return this.authService.loginService(loginDTO);
+  }
+
+  /**
+   * Refresh Token으로 새 Access Token 발급
+   * @param refreshToken
+   * @returns
+   */
+  @Post('refresh')
+  @ApiOperation({ summary: 'Refresh Token으로 새 Access Token 발급' })
+  @ApiBody({ type: String })
+  async refresh(@Body('refreshToken') refreshToken: string) {
+    return this.authService.refreshToken(refreshToken);
+  }
+
+  /**
+   * 로그아웃 시 Refresh Token 삭제
+   * @param refreshToken
+   * @returns
+   */
+  @Post('logout')
+  @ApiOperation({ summary: '로그아웃 시 Refresh Token 삭제' })
+  @ApiBody({ type: String })
+  async logout(@Body('refreshToken') refreshToken: string) {
+    return this.authService.logout(refreshToken);
   }
 
   /**
@@ -30,12 +57,11 @@ export class AuthController {
    * @param email
    * @returns boolean
    */
-  @Post('api/check-id')
+  @Post('check-id')
   @ApiOperation({ summary: '이메일 중복 확인' })
   @ApiBody({ type: EmailDto })
   @ApiResponse({ status: 200 })
   async checkEmail(@Body() dto: EmailDto) {
-    console.log('컨트롤러', dto.email);
     return this.authService.checkEmailService(dto.email);
   }
 
@@ -58,7 +84,7 @@ export class AuthController {
    * @param token
    * @returns
    */
-  @Get('api/verify-email')
+  @Get('verify-email')
   @ApiOperation({ summary: '이메일 인증 링크 클릭' })
   @ApiResponse({ status: 200, description: '이메일 인증 완료' })
   async verifyEmail(@Query('token') token: string) {
@@ -110,6 +136,21 @@ export class AuthController {
     description: `return { message: '비밀번호 변경 완료' }`,
   })
   async resetPassword(@Body() body: ResetPasswordDTO) {
+    return await this.authService.resetPasswordService(
+      body.token,
+      body.newPassword,
+    );
+  }
+
+  //TODO: 비밀번호 확인하는 API
+  @Post('check-password')
+  @ApiOperation({ summary: '마이페이지 비밀번호 확인' })
+  @ApiBody({ type: ResetPasswordDTO })
+  @ApiResponse({
+    status: 200,
+    description: `return { message: '비밀번호 변경 완료' }`,
+  })
+  async checkPassword(@Body() body: ResetPasswordDTO) {
     return await this.authService.resetPasswordService(
       body.token,
       body.newPassword,
