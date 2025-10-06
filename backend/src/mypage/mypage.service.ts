@@ -12,11 +12,11 @@ export class MypageService {
    * @returns {message:'정보가 업데이트 되었습니다'}
    */
   async getUserInfoService(id: number) {
-    const userData = await this.prisma.member.findFirst({
-      where: { id, deletedAt: null },
+    const userData = await this.prisma.member.findUnique({
+      where: { id },
     });
-    const pharmacyData = await this.prisma.pharmacy.findFirst({
-      where: { userId: id },
+    const pharmacyData = await this.prisma.pharmacy.findUnique({
+      where: { id },
     });
 
     if (!userData || !pharmacyData)
@@ -36,7 +36,6 @@ export class MypageService {
   }
 
   async updateUserInfoService(id: number, body: mypageInfoDTO) {
-    console.log(id, 'id값!!!');
     const dataToUpdate = {
       pharmacyName: body.pharmacyName,
       address: body.address,
