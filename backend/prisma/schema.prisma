@@ -19,7 +19,6 @@ model Member {
   email       String    @map("EMAIL") @unique
   password    String    @map("PASSWORD")
   licenseCode String    @map("LICENSE_CODE") @unique
-  isVerified Boolean  @default(false)
   deletedAt DateTime? @map("DELETED_AT")
 
   pharmacies  Pharmacy[]

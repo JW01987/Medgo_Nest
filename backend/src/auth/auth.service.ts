@@ -8,11 +8,10 @@ import bcrypt from 'bcrypt';
 import { PrismaService } from '../../prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import { LoginDTO } from './dtos/login.dto';
-import { JwtPayload } from './types/jwt-payload.type';
+import { JwtPayload } from '../jwt/types/jwt-payload.type';
 import * as crypto from 'crypto';
 import { MailerService } from '@nestjs-modules/mailer';
 import { RedisService } from '../redis/redis.service';
-import { EmailRecode } from './types/emailRecode.type';
 
 @Injectable()
 export class AuthService {
@@ -31,7 +30,9 @@ export class AuthService {
   async loginService(loginDTO: LoginDTO) {
     const { email, password } = loginDTO;
 
-    const user = await this.prisma.member.findUnique({ where: { email } });
+    const user = await this.prisma.member.findFirst({
+      where: { email, deletedAt: null },
+    });
     if (!user) throw new UnauthorizedException('가입되지 않은 이메일입니다.');
 
     const passwordValid = await bcrypt.compare(password, user.password);
@@ -66,11 +67,14 @@ export class AuthService {
     if (!record) throw new UnauthorizedException('유효하지 않은 리프레시 토큰');
 
     const { userId } = JSON.parse(record) as { userId: number };
-    const user = await this.prisma.member.findUnique({ where: { id: userId } });
+    const user = await this.prisma.member.findFirst({
+      where: { id: userId, deletedAt: null },
+    });
     if (!user) throw new UnauthorizedException('회원 정보를 찾을 수 없음');
 
     const newAccessToken = this.jwtService.sign(
       { userId: user.id, email: user.email },
+
       { expiresIn: '1h' },
     );
 
@@ -100,12 +104,26 @@ export class AuthService {
   }
 
   /**
-   * 이메일로 유저 찾기
+   * 이메일로 유저 찾기 (탈퇴한 유저도 존재하지 않음)
    * @param email
    * @returns 유저 정보
    */
   async findByEmail(email: string) {
-    const user = await this.prisma.member.findUnique({ where: { email } });
+    const user = await this.prisma.member.findFirst({
+      where: { email, deletedAt: null },
+    });
+    if (!user) throw new UnauthorizedException('유저가 존재하지 않습니다');
+    return user;
+  }
+  /**
+   * 아이디로 유저 찾기 (탈퇴한 유저도 존재하지 않음)
+   * @param id
+   * @returns 유저 정보
+   */
+  async findById(id: number) {
+    const user = await this.prisma.member.findFirst({
+      where: { id, deletedAt: null },
+    });
     if (!user) throw new UnauthorizedException('유저가 존재하지 않습니다');
     return user;
   }
@@ -119,14 +137,10 @@ export class AuthService {
     const token = crypto.randomBytes(32).toString('hex');
     const redisKey = `email_verif:${token}`;
     const ttlSeconds = 30 * 60; //30분
-    const data: EmailRecode = {
-      email,
-      verified: false,
-    };
 
     await this.redisService
       .getClient()
-      .setEx(redisKey, ttlSeconds, JSON.stringify(data));
+      .setEx(redisKey, ttlSeconds, JSON.stringify({ email }));
 
     const url =
       process.env.DOMAIN_URL + `/auth/api/verify-email?token=${token}`;
@@ -174,14 +188,12 @@ export class AuthService {
       .getClient()
       .get(`email_verif:${token}`);
     if (!userToken) throw new BadRequestException('유효하지 않은 링크입니다.');
-    const record = JSON.parse(userToken) as EmailRecode;
+    const record = JSON.parse(userToken) as { email: string };
 
     const redisKey = `email_verif:${record.email}`;
     const ttlSeconds = 24 * 60 * 60; //1d
 
-    await this.redisService
-      .getClient()
-      .setEx(redisKey, ttlSeconds, JSON.stringify({ verified: true }));
+    await this.redisService.getClient().setEx(redisKey, ttlSeconds, 'true');
     await this.redisService.getClient().del(`email_verif:${token}`);
 
     return { success: true, message: '이메일 인증 완료' };
@@ -228,7 +240,7 @@ export class AuthService {
   /**
    * 비밀번호 변경을 위한 메일 전송
    * @param email
-   * @returns
+   * @returns { message: '비밀번호 재설정 메일 발송 완료' }
    */
   async sendVerificationEmailForPsw(email: string) {
     const user = await this.findByEmail(email);
@@ -276,18 +288,17 @@ export class AuthService {
 
   /**
    * 비밀번호 변경
-   * @param token
-   * @param newPassword
-   * @returns
+   * @param body :PasswordDTO
+   * @returns { message: '비밀번호 변경 완료' }
    */
-  async resetPasswordService(token: string, newPassword: string) {
+  async resetPasswordService(token: string, password: string) {
     const userToken = await this.redisService
       .getClient()
       .get(`password_verif:${token}`);
     if (!userToken)
       throw new BadRequestException('유효하지 않거나 만료된 토큰입니다.');
     const record = JSON.parse(userToken) as { id: number };
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     await this.prisma.member.update({
       where: { id: record.id },
@@ -297,5 +308,42 @@ export class AuthService {
     await this.redisService.getClient().del(`password_verif:${token}`);
 
     return { message: '비밀번호 변경 완료' };
+  }
+
+  /**
+   * 비밀번호 확인
+   * @param token
+   * @param password
+   * @returns { message: '비밀번호가 확인되었습니다' }
+   */
+  async checkPswService(id: number, password: string) {
+    const user = await this.findById(id);
+
+    const passwordValid = await bcrypt.compare(password, user.password);
+    if (!passwordValid) {
+      throw new UnauthorizedException('비밀번호가 다릅니다');
+    }
+    return { message: '비밀번호가 확인되었습니다' };
+  }
+
+  /**
+   * 회원탈퇴
+   * @param token
+   * @param password
+   * @returns { message: '회원탈퇴가 완료되었습니다' };
+   */
+  async deleteAccountService(id: number, password: string) {
+    const user = await this.findById(id);
+    const passwordValid = await bcrypt.compare(password, user.password);
+    if (!passwordValid) {
+      throw new UnauthorizedException('비밀번호가 다릅니다');
+    }
+    const now = new Date();
+    await this.prisma.member.update({
+      where: { id: user.id },
+      data: { deletedAt: now },
+    });
+
+    return { message: '회원탈퇴가 완료되었습니다' };
   }
 }
