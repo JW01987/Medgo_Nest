@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { mypageInfoDTO } from './dto/mypage-info.dto';
+import { MypageInfoDTO } from './dto/mypage-info.dto';
 
 @Injectable()
 export class MypageService {
@@ -22,7 +22,7 @@ export class MypageService {
     if (!userData || !pharmacyData)
       throw new BadRequestException('유저 정보가 없습니다');
 
-    const data: mypageInfoDTO = {
+    const data: MypageInfoDTO = {
       pharmacyName: pharmacyData.pharmacyName,
       licenseCode: userData.licenseCode,
       address: pharmacyData.address,
@@ -35,7 +35,7 @@ export class MypageService {
     return data;
   }
 
-  async updateUserInfoService(id: number, body: mypageInfoDTO) {
+  async updateUserInfoService(id: number, body: MypageInfoDTO) {
     const dataToUpdate = {
       pharmacyName: body.pharmacyName,
       address: body.address,

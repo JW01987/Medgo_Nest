@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNumber, IsOptional, IsString } from 'class-validator';
 
-export class mypageInfoDTO {
+export class MypageInfoDTO {
   @ApiProperty({ description: '약국 이름' })
   @IsString()
   pharmacyName: string;
