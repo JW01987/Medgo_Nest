@@ -40,8 +40,8 @@ export class BoardController {
     description: `공지사항 정보`,
   })
   async getNotice(@Req() req) {
-    const user = (req as AuthRequest).user;
-    return await this.boardService.getNoticeService(user.userId);
+    const { pharmacyId } = (req as AuthRequest).user;
+    return await this.boardService.getNoticeService(pharmacyId);
   }
 
   /**
@@ -60,8 +60,8 @@ export class BoardController {
     description: `{ message: '공지사항 등록완료 '}`,
   })
   async createNotice(@Req() req, @Body() dto: NoticeDTO) {
-    const user = (req as AuthRequest).user;
-    return await this.boardService.createNoticeService(user.userId, dto);
+    const { pharmacyId } = (req as AuthRequest).user;
+    return await this.boardService.createNoticeService(pharmacyId, dto);
   }
 
   /**
@@ -80,8 +80,8 @@ export class BoardController {
     description: `{ message: '공지사항 업데이트' }`,
   })
   async updateNotice(@Req() req, @Body() dto: NoticeDTO) {
-    const user = (req as AuthRequest).user;
-    return await this.boardService.updateNoticeService(user.userId, dto);
+    const { pharmacyId } = (req as AuthRequest).user;
+    return await this.boardService.updateNoticeService(pharmacyId, dto);
   }
 
   /**
@@ -106,7 +106,7 @@ export class BoardController {
     description: `{ message: '공지사항 삭제' }`,
   })
   async deleteNotice(@Req() req, @Query('noticeId') noticeId: number) {
-    const user = (req as AuthRequest).user;
-    return await this.boardService.deleteNoticeService(user.userId, noticeId);
+    const { pharmacyId } = (req as AuthRequest).user;
+    return await this.boardService.deleteNoticeService(pharmacyId, noticeId);
   }
 }

@@ -12,6 +12,7 @@ import { JwtPayload } from '../common/jwt/types/jwt-payload.type';
 import * as crypto from 'crypto';
 import { MailerService } from '@nestjs-modules/mailer';
 import { RedisService } from '../redis/redis.service';
+import { PharmacyCommonService } from '../common/services/pharmacy-common.service';
 
 @Injectable()
 export class AuthService {
@@ -20,6 +21,7 @@ export class AuthService {
     private jwtService: JwtService,
     private mailerService: MailerService,
     private redisService: RedisService,
+    private commonService: PharmacyCommonService,
   ) {}
 
   /**
@@ -35,12 +37,14 @@ export class AuthService {
     });
     if (!user) throw new UnauthorizedException('가입되지 않은 이메일입니다.');
 
+    const pharmacy = await this.commonService.findPharmacyIdByUserId(user.id);
+
     const passwordValid = await bcrypt.compare(password, user.password);
     if (!passwordValid)
       throw new UnauthorizedException('비밀번호가 틀렸습니다');
 
     // Access Token (1시간)
-    const payload: JwtPayload = { userId: user.id, email: user.email };
+    const payload: JwtPayload = { userId: user.id, pharmacyId: pharmacy.id };
     const accessToken = this.jwtService.sign(payload, { expiresIn: '1h' });
 
     // Refresh Token (7일)
@@ -71,9 +75,10 @@ export class AuthService {
       where: { id: userId, deletedAt: null },
     });
     if (!user) throw new UnauthorizedException('회원 정보를 찾을 수 없음');
+    const pharmacy = await this.commonService.findPharmacyIdByUserId(user.id);
 
     const newAccessToken = this.jwtService.sign(
-      { userId: user.id, email: user.email },
+      { userId: user.id, pharmacyId: pharmacy.id },
 
       { expiresIn: '1h' },
     );

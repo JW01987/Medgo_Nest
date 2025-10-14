@@ -15,11 +15,9 @@ export class BoardService {
    * @param userId:number
    * @returns 공지사항 리스트
    */
-  async getNoticeService(userId: number) {
-    const pharmacy = await this.commonService.findPharmacyIdByUserId(userId);
-
+  async getNoticeService(pharmacyId: number) {
     const notices: NoticeDTO[] = await this.prisma.pharmacyBoard.findMany({
-      where: { pharmacyId: pharmacy.id },
+      where: { pharmacyId },
       select: { id: true, title: true, content: true, createdAt: true },
     });
 
@@ -32,11 +30,10 @@ export class BoardService {
    * @param dto:NoticeDTO
    * @returns
    */
-  async createNoticeService(userId: number, dto: NoticeDTO) {
-    const pharmacy = await this.commonService.findPharmacyIdByUserId(userId);
+  async createNoticeService(pharmacyId: number, dto: NoticeDTO) {
     await this.prisma.pharmacyBoard.create({
       data: {
-        pharmacyId: pharmacy.id,
+        pharmacyId,
         title: dto.title,
         content: dto.content,
         createdAt: new Date(),
@@ -52,14 +49,12 @@ export class BoardService {
    * @param dto:NoticeDTO
    * @returns
    */
-  async updateNoticeService(userId: number, dto: NoticeDTO) {
-    const pharmacy = await this.commonService.findPharmacyIdByUserId(userId);
-
+  async updateNoticeService(pharmacyId: number, dto: NoticeDTO) {
     if (!dto.noticeId) {
       throw new Error('공지사항 아이디가 필요합니다.');
     }
 
-    await this.findNoticeByPharmacyId(pharmacy.id, dto.noticeId);
+    await this.findNoticeByPharmacyId(pharmacyId, dto.noticeId);
     await this.prisma.pharmacyBoard.update({
       where: { id: dto.noticeId },
       data: {
@@ -76,10 +71,8 @@ export class BoardService {
    * @param noticeId:number
    * @returns { message: '공지사항 삭제' }
    */
-  async deleteNoticeService(userId: number, noticeId: number) {
-    const pharmacy = await this.commonService.findPharmacyIdByUserId(userId);
-
-    await this.findNoticeByPharmacyId(pharmacy.id, noticeId);
+  async deleteNoticeService(pharmacyId: number, noticeId: number) {
+    await this.findNoticeByPharmacyId(pharmacyId, noticeId);
 
     await this.prisma.pharmacyBoard.delete({
       where: { id: noticeId },
