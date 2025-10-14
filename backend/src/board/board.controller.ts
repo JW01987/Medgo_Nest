@@ -16,7 +16,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { AuthRequest } from '../jwt/types/auth-request.type';
+import { AuthRequest } from '../common/jwt/types/auth-request.type';
 import { BoardService } from './board.service';
 import { NoticeDTO } from './dto/board.dto';
 @ApiTags('Notice API')
@@ -24,7 +24,7 @@ import { NoticeDTO } from './dto/board.dto';
 export class BoardController {
   constructor(private readonly boardService: BoardService) {}
 
-  //TODO:공지사항 등록, 수정, 삭제, 조회(페이징), 고객이 공지사항 조회
+  //TODO: 고객이 공지사항 조회
 
   /**
    * 공지사항 조회 (약국)

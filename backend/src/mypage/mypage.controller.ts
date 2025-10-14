@@ -3,7 +3,7 @@ import { MypageService } from './mypage.service';
 
 import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
-import { AuthRequest } from '../jwt/types/auth-request.type';
+import { AuthRequest } from '../common/jwt/types/auth-request.type';
 import { MypageInfoDTO } from './dto/mypage-info.dto';
 
 @Controller('mypage')

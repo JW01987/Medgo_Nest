@@ -20,7 +20,7 @@ import { LoginDTO } from './dtos/login.dto';
 import { EmailDto } from './dtos/email.dto';
 import { PasswordDTO } from './dtos/psw.dto';
 import { AuthGuard } from '@nestjs/passport';
-import { AuthRequest } from '../jwt/types/auth-request.type';
+import { AuthRequest } from '../common/jwt/types/auth-request.type';
 
 //--- 로그인 / 회원가입 ---//
 @ApiTags('Auth API')

@@ -1,10 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { NoticeDTO } from './dto/board.dto';
+import { PharmacyCommonService } from '../common/services/pharmacy-common.service';
 
 @Injectable()
 export class BoardService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private commonService: PharmacyCommonService,
+  ) {}
 
   /**
    * 공지사항 조회
@@ -12,7 +16,7 @@ export class BoardService {
    * @returns 공지사항 리스트
    */
   async getNoticeService(userId: number) {
-    const pharmacy = await this.findPharmacyByUserId(userId);
+    const pharmacy = await this.commonService.findPharmacyIdByUserId(userId);
 
     const notices: NoticeDTO[] = await this.prisma.pharmacyBoard.findMany({
       where: { pharmacyId: pharmacy.id },
@@ -29,7 +33,7 @@ export class BoardService {
    * @returns
    */
   async createNoticeService(userId: number, dto: NoticeDTO) {
-    const pharmacy = await this.findPharmacyByUserId(userId);
+    const pharmacy = await this.commonService.findPharmacyIdByUserId(userId);
     await this.prisma.pharmacyBoard.create({
       data: {
         pharmacyId: pharmacy.id,
@@ -49,7 +53,7 @@ export class BoardService {
    * @returns
    */
   async updateNoticeService(userId: number, dto: NoticeDTO) {
-    const pharmacy = await this.findPharmacyByUserId(userId);
+    const pharmacy = await this.commonService.findPharmacyIdByUserId(userId);
 
     if (!dto.noticeId) {
       throw new Error('공지사항 아이디가 필요합니다.');
@@ -73,7 +77,7 @@ export class BoardService {
    * @returns { message: '공지사항 삭제' }
    */
   async deleteNoticeService(userId: number, noticeId: number) {
-    const pharmacy = await this.findPharmacyByUserId(userId);
+    const pharmacy = await this.commonService.findPharmacyIdByUserId(userId);
 
     await this.findNoticeByPharmacyId(pharmacy.id, noticeId);
 
@@ -84,23 +88,6 @@ export class BoardService {
     return { message: '공지사항 삭제' };
   }
 
-  /**
-   * userId로 약국 찾기
-   * @param userId
-   * @returns 약국의 정보
-   */
-  async findPharmacyByUserId(userId: number) {
-    const pharmacy = await this.prisma.pharmacy.findFirst({
-      where: { userId, deletedAt: null },
-      select: { id: true },
-    });
-
-    if (!pharmacy) {
-      throw new Error('약국을 찾을 수 없습니다.');
-    }
-
-    return pharmacy;
-  }
   /**
    * 약국ID와 공지사항ID로 공지사항 찾기
    * @param pharmacyId

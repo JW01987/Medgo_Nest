@@ -7,7 +7,7 @@ import { StockModule } from './stock/stock.module';
 import { BoardModule } from './board/board.module';
 import { AuthModule } from './auth/auth.module';
 import { PrismaModule } from '../prisma/prisma.module';
-import { GlobalJwtModule } from './jwt/jwt.module';
+import { GlobalJwtModule } from './common/jwt/jwt.module';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { RedisModule } from './redis/redis.module';
 import { MypageModule } from './mypage/mypage.module';

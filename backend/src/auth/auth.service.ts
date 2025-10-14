@@ -8,7 +8,7 @@ import bcrypt from 'bcrypt';
 import { PrismaService } from '../../prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import { LoginDTO } from './dtos/login.dto';
-import { JwtPayload } from '../jwt/types/jwt-payload.type';
+import { JwtPayload } from '../common/jwt/types/jwt-payload.type';
 import * as crypto from 'crypto';
 import { MailerService } from '@nestjs-modules/mailer';
 import { RedisService } from '../redis/redis.service';
