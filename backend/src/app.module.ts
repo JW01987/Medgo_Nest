@@ -1,16 +1,16 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { MemberModule } from './member/member.module';
 import { PharmacyModule } from './pharmacy/pharmacy.module';
 import { MedicineModule } from './medicine/medicine.module';
 import { StockModule } from './stock/stock.module';
 import { BoardModule } from './board/board.module';
 import { AuthModule } from './auth/auth.module';
-
 import { PrismaModule } from '../prisma/prisma.module';
-import { GlobalJwtModule } from './jwt/jwt.module';
+import { GlobalJwtModule } from './common/jwt/jwt.module';
 import { MailerModule } from '@nestjs-modules/mailer';
+import { RedisModule } from './redis/redis.module';
+import { MypageModule } from './mypage/mypage.module';
 
 @Module({
   imports: [
@@ -24,13 +24,14 @@ import { MailerModule } from '@nestjs-modules/mailer';
       },
     }),
     GlobalJwtModule,
-    MemberModule,
     PharmacyModule,
     MedicineModule,
     StockModule,
     BoardModule,
     AuthModule,
     PrismaModule,
+    RedisModule,
+    MypageModule,
   ],
   controllers: [AppController],
   providers: [AppService],

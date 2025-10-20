@@ -4,6 +4,6 @@ import { MedicineService } from './medicine.service';
 
 @Module({
   controllers: [MedicineController],
-  providers: [MedicineService]
+  providers: [MedicineService],
 })
 export class MedicineModule {}

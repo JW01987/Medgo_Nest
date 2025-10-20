@@ -18,6 +18,10 @@ async function bootstrap() {
     .setTitle('Spring -> Nest API')
     .setDescription('Spring에서 Nest로 마이그레이션 프로젝트 API')
     .setVersion('1.0')
+    .addBearerAuth(
+      { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
+      'access-token',
+    )
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

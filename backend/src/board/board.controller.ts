@@ -1,4 +1,108 @@
-import { Controller } from '@nestjs/common';
-
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import { AuthRequest } from '../common/jwt/types/auth-request.type';
+import { BoardService } from './board.service';
+import { NoticeDTO } from './dto/board.dto';
+@ApiTags('Notice API')
 @Controller('board')
-export class BoardController {}
+export class BoardController {
+  constructor(private readonly boardService: BoardService) {}
+
+  //TODO: 고객이 공지사항 조회
+
+  /**
+   * 공지사항 조회 (약국)
+   * @param {AuthRequest} req - 요청 객체 (JWT 토큰을 통해 인증된 사용자 정보 포함)
+   */
+  @Get()
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: '공지사항 조회하기 - 약국' })
+  @ApiResponse({
+    status: 200,
+    description: `공지사항 정보`,
+  })
+  async getNotice(@Req() req) {
+    const { pharmacyId } = (req as AuthRequest).user;
+    return await this.boardService.getNoticeService(pharmacyId);
+  }
+
+  /**
+   * 공지사항 등록(약국)
+   * @param {AuthRequest} req - 요청 객체 (JWT 토큰을 통해 인증된 사용자 정보 포함)
+   * @param {NoticeDTO} dto - 공지사항 등록에 필요한 데이터
+   */
+  @Post('create')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: '공지사항 등록하기' })
+  @ApiBody({ type: NoticeDTO })
+  @ApiResponse({
+    status: 200,
+    description: `{ message: '공지사항 등록완료 '}`,
+  })
+  async createNotice(@Req() req, @Body() dto: NoticeDTO) {
+    const { pharmacyId } = (req as AuthRequest).user;
+    return await this.boardService.createNoticeService(pharmacyId, dto);
+  }
+
+  /**
+   * 공지사항 수정(약국)
+   * @param {AuthRequest} req - 요청 객체 (JWT 토큰을 통해 인증된 사용자 정보 포함)
+   * @param {NoticeDTO} dto - 공지사항 수정에 필요한 데이터
+   */
+  @Post('update')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: '공지사항 수정하기 - 약국' })
+  @ApiBody({ type: NoticeDTO })
+  @ApiResponse({
+    status: 201,
+    description: `{ message: '공지사항 업데이트' }`,
+  })
+  async updateNotice(@Req() req, @Body() dto: NoticeDTO) {
+    const { pharmacyId } = (req as AuthRequest).user;
+    return await this.boardService.updateNoticeService(pharmacyId, dto);
+  }
+
+  /**
+   * 공지사항 삭제(약국)
+   * @param {AuthRequest} req - 요청 객체 (JWT 토큰을 통해 인증된 사용자 정보 포함)
+   * @param {number} noticeId - 삭제할 공지사항 아이디
+   */
+  @Post('delete')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: '공지사항 삭제하기 - 약국' })
+  @ApiQuery({
+    name: 'noticeId',
+    type: Number,
+    description: '삭제할 공지사항의 ID',
+    example: 1,
+    required: true,
+  })
+  @ApiResponse({
+    status: 201,
+    description: `{ message: '공지사항 삭제' }`,
+  })
+  async deleteNotice(@Req() req, @Query('noticeId') noticeId: number) {
+    const { pharmacyId } = (req as AuthRequest).user;
+    return await this.boardService.deleteNoticeService(pharmacyId, noticeId);
+  }
+}

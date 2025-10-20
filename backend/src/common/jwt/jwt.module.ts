@@ -1,5 +1,6 @@
 import { Global, Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
+import { JwtStrategy } from './jwt.strategy';
 
 @Global()
 @Module({
@@ -11,6 +12,7 @@ import { JwtModule } from '@nestjs/jwt';
       },
     }),
   ],
-  exports: [JwtModule],
+  providers: [JwtStrategy],
+  exports: [JwtModule, JwtStrategy],
 })
 export class GlobalJwtModule {}
