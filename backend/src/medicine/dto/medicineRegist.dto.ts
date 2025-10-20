@@ -1,38 +1,18 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString, IsIn, IsNumberString } from 'class-validator';
+import { IsNumberString } from 'class-validator';
 
-export class medicineRegistQueryDTO {
+export class MedicineRegistQueryDTO {
   @ApiPropertyOptional({
-    description: '현재 페이지 (기본값: 1)',
+    description: '의약품 아이디',
     example: 1,
-    default: 1,
   })
-  @IsOptional()
   @IsNumberString()
-  page?: string;
+  medicineId: string;
 
   @ApiPropertyOptional({
-    description: '한 페이지당 표시할 데이터 개수 (기본값: 10)',
+    description: '의약품 갯수',
     example: 10,
-    default: 10,
   })
-  @IsOptional()
   @IsNumberString()
-  size?: string;
-
-  @ApiPropertyOptional({
-    description: '검색 키워드',
-    example: '아스피린',
-  })
-  @IsString()
-  keyword: string;
-
-  @ApiPropertyOptional({
-    description: '정렬 순서 (asc 또는 desc)',
-    example: 'asc',
-    default: 'asc',
-  })
-  @IsOptional()
-  @IsIn(['asc', 'desc'])
-  order?: 'asc' | 'desc';
+  medicineCount: string;
 }

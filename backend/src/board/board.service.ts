@@ -1,14 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { NoticeDTO } from './dto/board.dto';
-import { PharmacyCommonService } from '../common/services/pharmacy-common.service';
 
 @Injectable()
 export class BoardService {
-  constructor(
-    private prisma: PrismaService,
-    private commonService: PharmacyCommonService,
-  ) {}
+  constructor(private prisma: PrismaService) {}
 
   /**
    * 공지사항 조회
