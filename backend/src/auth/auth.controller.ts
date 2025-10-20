@@ -30,8 +30,7 @@ export class AuthController {
 
   /**
    * 로그인
-   * @param loginDTO
-   * @returns JWT 토큰
+   * @param {LoginDTO} loginDTO - 로그인 데이터
    */
   @Post('login')
   @ApiOperation({ summary: '로그인' })
@@ -46,8 +45,7 @@ export class AuthController {
 
   /**
    * Refresh Token으로 새 Access Token 발급
-   * @param refreshToken
-   * @returns
+   * @param {string} refreshToken
    */
   @Post('refresh')
   @ApiOperation({ summary: 'Refresh Token으로 새 Access Token 발급' })
@@ -62,8 +60,7 @@ export class AuthController {
 
   /**
    * 로그아웃 시 Refresh Token 삭제
-   * @param refreshToken
-   * @returns
+   * @param {string} refreshToken
    */
   @Post('logout')
   @ApiOperation({ summary: '로그아웃 시 Refresh Token 삭제' })
@@ -77,8 +74,7 @@ export class AuthController {
 
   /**
    * 이메일 중복 확인
-   * @param email
-   * @returns boolean
+   * @param {EmailDto} dto - 이메일 데이터
    */
   @Post('check-id')
   @ApiOperation({ summary: '이메일 중복 확인' })
@@ -90,8 +86,7 @@ export class AuthController {
 
   /**
    * 이메일 인증 링크 발송
-   * @param email
-   * @returns
+   * @param {EmailDto} dto - 이메일 데이터
    */
   @Post('send-verification-email')
   @ApiOperation({ summary: '이메일 인증 링크 발송' })
@@ -104,8 +99,7 @@ export class AuthController {
   // TODO: 이메일 인증 후 완료 페이지 제작하기
   /**
    * 이메일 인증 링크 클릭
-   * @param token
-   * @returns
+   * @param {string} token
    */
   @Get('verify-email')
   @ApiOperation({ summary: '이메일 인증 링크 클릭' })
@@ -116,8 +110,7 @@ export class AuthController {
 
   /**
    * 회원가입
-   * @param registerDTO
-   * @returns
+   * @param {RegisterDTO} registerDTO - 회원가입 데이터
    */
   @Post('register')
   @ApiOperation({ summary: '회원가입' })
@@ -129,8 +122,7 @@ export class AuthController {
 
   /**
    * 비밀번호 재설정을 위한 메일 발송
-   * @param EmailDto
-   * @returns
+   * @param {EmailDto} dto - 이메일 데이터
    */
   @Post('forgot-password')
   @ApiOperation({ summary: '비밀번호 변경을 위한 메일 발송' })
@@ -147,8 +139,8 @@ export class AuthController {
 
   /**
    * 비밀번호 변경
-   * @param body: { token: string; newPassword: string }
-   * @returns
+   * @param {PasswordDTO} body - 비밀번호 데이터
+   * @param {string} token - 비밀번호 재설정 토큰
    */
   //TODO:/auth/reset-password?token=${token} 으로 프론트 제작
   @Post('reset-password')
@@ -164,8 +156,8 @@ export class AuthController {
 
   /**
    * 비밀번호 확인
-   * @param body
-   * @returns { message: '비밀번호가 확인되었습니다' }
+   * @param {PasswordDTO} body - 비밀번호 데이터
+   * @param {AuthRequest} req - 요청 객체 (JWT 토큰을 통해 인증된 사용자 정보 포함)
    */
   @Post('check-password')
   @UseGuards(AuthGuard('jwt'))
@@ -183,8 +175,8 @@ export class AuthController {
 
   /**
    * 회원탈퇴
-   * @param body
-   * @returns { message: '회원탈퇴가 완료되었습니다' }
+   * @param {PasswordDTO} body - 비밀번호 데이터
+   * @param {AuthRequest} req - 요청 객체 (JWT 토큰을 통해 인증된 사용자 정보 포함)
    */
   @Post('delete-account')
   @UseGuards(AuthGuard('jwt'))

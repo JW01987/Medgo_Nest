@@ -12,7 +12,6 @@ import { JwtPayload } from '../common/jwt/types/jwt-payload.type';
 import * as crypto from 'crypto';
 import { MailerService } from '@nestjs-modules/mailer';
 import { RedisService } from '../redis/redis.service';
-import { PharmacyCommonService } from '../common/services/pharmacy-common.service';
 
 @Injectable()
 export class AuthService {
@@ -21,7 +20,6 @@ export class AuthService {
     private jwtService: JwtService,
     private mailerService: MailerService,
     private redisService: RedisService,
-    private commonService: PharmacyCommonService,
   ) {}
 
   /**
@@ -37,7 +35,7 @@ export class AuthService {
     });
     if (!user) throw new UnauthorizedException('가입되지 않은 이메일입니다.');
 
-    const pharmacy = await this.commonService.findPharmacyIdByUserId(user.id);
+    const pharmacy = await this.findPharmacyIdByUserId(user.id);
 
     const passwordValid = await bcrypt.compare(password, user.password);
     if (!passwordValid)
@@ -75,7 +73,7 @@ export class AuthService {
       where: { id: userId, deletedAt: null },
     });
     if (!user) throw new UnauthorizedException('회원 정보를 찾을 수 없음');
-    const pharmacy = await this.commonService.findPharmacyIdByUserId(user.id);
+    const pharmacy = await this.findPharmacyIdByUserId(user.id);
 
     const newAccessToken = this.jwtService.sign(
       { userId: user.id, pharmacyId: pharmacy.id },
@@ -350,5 +348,14 @@ export class AuthService {
     });
 
     return { message: '회원탈퇴가 완료되었습니다' };
+  }
+
+  async findPharmacyIdByUserId(userId: number) {
+    const pharmacy = await this.prisma.pharmacy.findFirst({
+      where: { userId, deletedAt: null },
+    });
+    if (!pharmacy)
+      throw new UnauthorizedException('약국 정보를 찾을 수 없습니다');
+    return pharmacy;
   }
 }

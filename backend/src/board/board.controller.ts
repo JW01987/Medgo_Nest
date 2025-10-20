@@ -28,8 +28,7 @@ export class BoardController {
 
   /**
    * 공지사항 조회 (약국)
-   * @param req:AuthRequest
-   * @returns 공지사항 리스트
+   * @param {AuthRequest} req - 요청 객체 (JWT 토큰을 통해 인증된 사용자 정보 포함)
    */
   @Get()
   @UseGuards(AuthGuard('jwt'))
@@ -46,9 +45,8 @@ export class BoardController {
 
   /**
    * 공지사항 등록(약국)
-   * @param req
-   * @param dto
-   * @returns
+   * @param {AuthRequest} req - 요청 객체 (JWT 토큰을 통해 인증된 사용자 정보 포함)
+   * @param {NoticeDTO} dto - 공지사항 등록에 필요한 데이터
    */
   @Post('create')
   @UseGuards(AuthGuard('jwt'))
@@ -66,9 +64,8 @@ export class BoardController {
 
   /**
    * 공지사항 수정(약국)
-   * @param req:AuthRequest
-   * @param dto:NoticeDTO
-   * @returns
+   * @param {AuthRequest} req - 요청 객체 (JWT 토큰을 통해 인증된 사용자 정보 포함)
+   * @param {NoticeDTO} dto - 공지사항 수정에 필요한 데이터
    */
   @Post('update')
   @UseGuards(AuthGuard('jwt'))
@@ -86,9 +83,8 @@ export class BoardController {
 
   /**
    * 공지사항 삭제(약국)
-   * @param req
-   * @param noticeId
-   * @returns
+   * @param {AuthRequest} req - 요청 객체 (JWT 토큰을 통해 인증된 사용자 정보 포함)
+   * @param {number} noticeId - 삭제할 공지사항 아이디
    */
   @Post('delete')
   @UseGuards(AuthGuard('jwt'))

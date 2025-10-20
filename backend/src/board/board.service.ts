@@ -8,8 +8,7 @@ export class BoardService {
 
   /**
    * 공지사항 조회
-   * @param userId:number
-   * @returns 공지사항 리스트
+   * @param {number} pharmacyId - 약국 아이디
    */
   async getNoticeService(pharmacyId: number) {
     const notices: NoticeDTO[] = await this.prisma.pharmacyBoard.findMany({
@@ -22,9 +21,8 @@ export class BoardService {
 
   /**
    * 공지사항 등록
-   * @param userId:number
-   * @param dto:NoticeDTO
-   * @returns
+   * @param {number} pharmacyId - 약국 아이디
+   * @param {NoticeDTO} dto - 공지사항 데이터
    */
   async createNoticeService(pharmacyId: number, dto: NoticeDTO) {
     await this.prisma.pharmacyBoard.create({
@@ -41,9 +39,8 @@ export class BoardService {
 
   /**
    * 공지사항 수정
-   * @param userId:number
-   * @param dto:NoticeDTO
-   * @returns
+   * @param {number} pharmacyId - 약국 아이디
+   * @param {NoticeDTO} dto - 공지사항 수정 데이터
    */
   async updateNoticeService(pharmacyId: number, dto: NoticeDTO) {
     if (!dto.noticeId) {
@@ -63,9 +60,8 @@ export class BoardService {
   }
   /**
    * 공지사항 삭제
-   * @param userId:number
-   * @param noticeId:number
-   * @returns { message: '공지사항 삭제' }
+   * @param {number} pharmacyId - 약국 아이디
+   * @param {number} noticeId - 공지사항 아이디
    */
   async deleteNoticeService(pharmacyId: number, noticeId: number) {
     await this.findNoticeByPharmacyId(pharmacyId, noticeId);
@@ -79,9 +75,8 @@ export class BoardService {
 
   /**
    * 약국ID와 공지사항ID로 공지사항 찾기
-   * @param pharmacyId
-   * @param noticeId
-   * @returns 공지사항 정보
+   * @param {number} pharmacyId - 약국 아이디
+   * @param {number} noticeId - 공지사항 아이디
    */
   async findNoticeByPharmacyId(pharmacyId: number, noticeId: number) {
     const notice = await this.prisma.pharmacyBoard.findFirst({
